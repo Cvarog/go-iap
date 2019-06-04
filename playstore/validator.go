@@ -18,6 +18,7 @@ import (
 
 // The IABProduct type is an interface for product service
 type IABProduct interface {
+	AcknowledgeProduct(context.Context, string, string, string, *androidpublisher.ProductPurchasesAcknowledgeRequest) error
 	VerifyProduct(context.Context, string, string, string) (*androidpublisher.ProductPurchase, error)
 }
 
@@ -93,6 +94,24 @@ func (c *Client) VerifySubscription(
 	result, err := ps.Get(packageName, subscriptionID, token).Context(ctx).Do()
 
 	return result, err
+}
+
+func (c *Client) AcknowledgeProduct(
+	ctx context.Context,
+	packageName string,
+	subscriptionID string,
+	token string,
+	req *androidpublisher.ProductPurchasesAcknowledgeRequest,
+) error {
+	service, err := androidpublisher.New(c.httpCli)
+	if err != nil {
+		return err
+	}
+
+	ps := androidpublisher.NewPurchasesProductsService(service)
+	err = ps.Acknowledge(packageName, subscriptionID, token, req).Context(ctx).Do()
+
+	return err
 }
 
 // VerifyProduct verifies product status
